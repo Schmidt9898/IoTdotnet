@@ -23,41 +23,59 @@ namespace IoTdotnet.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            return NotFound();
-            //var r = await _sensorService.
+            var r = await _sensorService.GetProjectVMByIdAsync(id);
 
-            //if (r == null)
-            //{
-            //    return NotFound();
-            //}
+            if (r == null)
+            {
+                return NotFound();
+            }
 
-            //return Ok(r);
+            return Ok(r);
         }
+        //[HttpGet("{id}/value")]
+        //public async Task<IActionResult> GetSensorValueById(int id)
+        //{
+        //    var r = await _sensorService.GetProjectByIdAsync(id);
+
+        //    if (r == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    return Ok(r);
+        //}
 
         // POST api/<RecipesController>
         [HttpPost("")]
-        public async Task<IActionResult> Post([FromBody] NewSensorDto sensordto)
+        public async Task<IActionResult> Post([FromBody] NewProjectDto projectdto)
         {
             //if (!ModelState.IsValid)
             //    return BadRequest(ModelState);
 
-            //var createdRecipe = await _recipeBookService.CreateRecipeAsync(recipeBookId, recipe);
-            //if (createdRecipe == null)
-            //    return NotFound();
+            var createdProject = await _sensorService.CreateProjectAsync(2, projectdto);
+            if (createdProject == null)
+                return NotFound();
 
             //return CreatedAtAction(nameof(GetById), new { Id = createdRecipe.Id }, createdRecipe);
-            return NotFound();
+            return Ok(createdProject);
         }
 
         // PUT api/<RecipesController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] UpdateSensorDto recipe)
+        public async Task<IActionResult> Put(int id, [FromBody] UpdateProjectDto project)
         {
-            return NotFound();
+            var r = await _sensorService.GetProjectByIdAsync(id);
 
-            //return await _recipeBookService.UpdateRecipeAsync(id, recipe)
-            //    ? NoContent()
-            //    : NotFound();
+            if (r == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(r);
+
+
+            return await _sensorService.UpdateProjectAsync(id, project)
+                ? NoContent()
+                : NotFound();
         }
 
         // DELETE api/<RecipesController>/5

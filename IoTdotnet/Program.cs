@@ -1,5 +1,6 @@
 
 using IoTdotnet.Models;
+using IoTdotnet.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 
@@ -23,9 +24,10 @@ namespace IoTdotnet
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddDbContext<SensorsDBContext>(opt =>
                 opt.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase")));
-
-
-
+            
+            
+            builder.Services.AddTransient<IotUserService, IotUserService>();
+            builder.Services.AddTransient<SensorService, SensorService>();
 
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
