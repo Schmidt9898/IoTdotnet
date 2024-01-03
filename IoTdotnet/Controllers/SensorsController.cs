@@ -19,7 +19,32 @@ namespace IoTdotnet.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<IActionResult> GetSensorVMById(int id)
+        {
+
+            var s = await _sensorService.GetSensorVMByIdAsync(id);
+            if (s == null)
+            {
+                return NotFound();
+            }
+            return Ok(s);
+        }
+
+        [HttpGet("{id}/values")]
+        public async Task<IActionResult> GetSensorValuesById(int id)
+        {
+            return NotFound();
+            //var r = await _sensorService.
+
+            //if (r == null)
+            //{
+            //    return NotFound();
+            //}
+
+            //return Ok(r);
+        }
+        [HttpGet("{id}/Details")]
+        public async Task<IActionResult> GetSensorById(int id)
         {
             return NotFound();
             //var r = await _sensorService.
@@ -48,8 +73,8 @@ namespace IoTdotnet.Controllers
         }
 
         // PUT api/<RecipesController>/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, [FromBody] UpdateSensorDto recipe)
+        [HttpPut("{id}/Set/{value}")]
+        public async Task<IActionResult> Put(int id,int value)
         {
             return NotFound();
 
@@ -69,7 +94,15 @@ namespace IoTdotnet.Controllers
             //    : NotFound();
         }
 
+        [HttpPut("{id}/AddUser/{user_id}")]
+        public async Task<IActionResult> AddUser(int sensorId, int UserId)
+        {
+            return NotFound();
 
+            //return await _recipeBookService.UpdateRecipeAsync(id, recipe)
+            //    ? NoContent()
+            //    : NotFound();
+        }
 
 
     }

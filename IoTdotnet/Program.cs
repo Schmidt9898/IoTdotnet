@@ -1,8 +1,12 @@
 
 using IoTdotnet.Models;
 using IoTdotnet.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Serilog;
+using System.Text;
 
 namespace IoTdotnet
 {
@@ -24,8 +28,35 @@ namespace IoTdotnet
             builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             builder.Services.AddDbContext<SensorsDBContext>(opt =>
                 opt.UseNpgsql(builder.Configuration.GetConnectionString("WebApiDatabase")));
-            
-            
+
+            //  For identity
+            builder.Services.AddIdentity<IotUser, IdentityRole>()
+                .AddEntityFrameworkStores<SensorsDBContext>()
+                .AddDefaultTokenProviders();
+
+            builder.Services
+            //  Adding authentication
+            .AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            //  Add JWt bearer
+            .AddJwtBearer(options =>
+            {
+                options.SaveToken = true;
+                options.RequireHttpsMetadata = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = false,
+                    ValidAudience = builder.Configuration["JWT:ValidAudience"],
+                    ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+                };
+            });
+
             builder.Services.AddTransient<IotUserService, IotUserService>();
             builder.Services.AddTransient<SensorService, SensorService>();
 

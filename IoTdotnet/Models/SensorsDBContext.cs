@@ -10,15 +10,29 @@ namespace IoTdotnet.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            //  One-to-many
-            //modelBuilder.Entity<Project>()
-            //    .HasOne<IotUser>(r => r.Owner)
-            //    .WithMany(rb => rb.Projects)
-            //    .HasForeignKey(r => r.OwnerId);
-            //modelBuilder.Entity<Sensor>()
-            //    .HasOne<Project>(r => r.project)
-            //    .WithMany(rb => rb.Sensors)
-            //    .HasForeignKey(r => r.ProjectId);
+            //One - to - many
+            modelBuilder.Entity<Project>()
+                .HasOne<IotUser>(r => r.Owner)
+                .WithMany(rb => rb.Projects);
+                //.HasForeignKey(r => r.OwnerId);
+            modelBuilder.Entity<Sensor>()
+                .HasOne<Project>(r => r.project)
+                .WithMany(rb => rb.Sensors);
+
+            modelBuilder.Entity<SensorValue>()
+            .HasOne<Sensor>(r => r.sensorOf)
+            .WithMany(rb => rb.values);
+            //.HasForeignKey(r => r.ProjectId);
+
+            modelBuilder.Entity<Sensor>()
+            .Property(f => f.lastUpdate)
+            .HasColumnType("timestamp");
+
+            modelBuilder.Entity<SensorValue>()
+            .Property(f => f.Time)
+            .HasColumnType("timestamp");
+            //modelBuilder.Entity<SensorValue>()
+            //.HasNoKey();
 
             //  Many-to-many
             //modelBuilder.Entity<Recipe>()
@@ -42,6 +56,7 @@ namespace IoTdotnet.Models
         public DbSet<IotUser> users { get; set; } // for this assigment i will not place the users in a different context, but i would otherwise
         public DbSet<Sensor> sensors { get; set; }
         public DbSet<Project> projects { get; set; }
+        public DbSet<SensorValue> sensorValues { get; set; }
 
 
     }

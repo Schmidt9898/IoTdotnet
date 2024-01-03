@@ -4,6 +4,7 @@ using IoTdotnet.Models;
 using IoTdotnet.View;
 using Microsoft.CodeAnalysis;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace IoTdotnet.Services
 {
@@ -19,57 +20,36 @@ namespace IoTdotnet.Services
             _rng = new Random();
         }
 
-        public async Task<Sensor> GetSensorByIdAsync(int id)
-        {
-            return await _context
-                .sensors
-                .Where(x => x.Id == id)
-                //.Select(x => _mapper.Map<SensorVM>(x))
-                .SingleOrDefaultAsync();
-        }
+        //public async Task<Sensor> GetSensorByIdAsync(int id)
+        //{
+        //    return await _context
+        //        .sensors
+        //        .Where(x => x.Id == id)
+        //        //.Select(x => _mapper.Map<SensorVM>(x))
+        //        .SingleOrDefaultAsync();
+        //}
         public async Task<ProjectVM> GetProjectVMByIdAsync(int id)
         {
+            var p = await GetProjectByIdAsync(id);
 
-            
-            var p = await _context.projects.FindAsync(id);
-
-
-            //var sensors_ = await _context.sensors.Where(x => x.ProjectId == id);
-            
-
+            if (p == null)
+                return null;
             return _mapper.Map<View.ProjectVM>(p);
-            //.Select(x => _mapper.Map<SensorVM>(x))
-            //.SingleOrDefaultAsync();
+        }
+        public async Task<Models.Project> GetProjectByIdAsync(int id)
+        {
+
+            var b = _context.projects.Include(p => p.Owner).FirstOrDefault(x => x.Id == id);
+
+            //var p = await _context.projects.FindAsync(id);
+
+            //var u = await _context.users.FindAsync(p.Owner);
+
+            return b;
         }
 
-  //      public int? GetFreeSensorId()
-		//{
-  //          for (int i = 0; i < 100; i++)
-  //          {
-  //          int id = _rng.Next();
-  //          if(_context.sensors.Find(id) is null)
-  //              {
-  //                  return id;
-  //              }
-  //          }
-  //          return null;
-		//}
 
-  //      public int? GetFreeProjectId()
-  //      {
-  //          for (int i = 0; i < 100; i++)
-  //          {
-  //              int id = _rng.Next();
-  //              if (_context.projects.Find(id) is null)
-  //              {
-  //                  return id;
-  //              }
-  //          }
-  //          return null;
-  //      }
-
-
-        public async Task<ProjectVM> CreateProjectAsync(int owner_id,NewProjectDto s)
+        public async Task<ProjectVM> CreateProjectAsync(string owner_id,NewProjectDto s)
         {
             var p = _mapper.Map<Models.Project>(s);
 
@@ -103,39 +83,60 @@ namespace IoTdotnet.Services
   //          return await CreateSensorAsync(id,s);
 
 		//}
-        public async Task<Sensor> CreateSensorAsync(int projectId, NewSensorDto x)
+        public async Task<SensorVM> CreateSensorAsync(int projectId, NewSensorDto x)
         {
             var m = _mapper.Map<Sensor>(x);
-
-            //sensor.RecipesNumber++;
-
-            //  1. Set the foreign key id
-            //var sid_ = GetFreeSensorId();
-            //if (sid_ is null)
-            //    return null;
-            //m.Id = sid_ ?? default(int);
-
-
-            //  2. Set the foreign key by navigation property
-            //m.RecipeBook = book;
-
+//            m.values = new List<int>();
             var project = await _context.projects.FindAsync(projectId);
             if (project == null)
                 return null;
-            //m.ProjectId = projectId;
-            project.Sensors.Add(m);
-
-
+            m.project = project;
+            //project.Sensors.Add(m);
 
             _context.sensors.Add(m);
             await _context.SaveChangesAsync();
 
-            return m;// _mapper.Map<RecipeVM>(m);
+            return _mapper.Map<SensorVM>(m);
         }
 
-        public Task<bool> UpdateProjectAsync(int id, UpdateProjectDto project)
+        public async Task<ProjectVM> UpdateProjectAsync(Models.Project project, UpdateProjectDto dto)
         {
-            throw new NotImplementedException();
+            project.Name = dto.Name;
+            project.Description = dto.Description;
+
+            _context.Entry(project).State = EntityState.Modified;
+            var n = _context.SaveChanges();
+
+            return _mapper.Map<ProjectVM>(project);
         }
+
+        public async Task<bool> DeleteProject(Models.Project r)
+        {
+            _context.projects.Remove(r);
+            _context.SaveChanges();
+            return true;
+        }
+
+        public async Task<SensorVM> GetSensorVMByIdAsync(int id)
+        {
+            var sensor = await GetSensorByIdAsync(id);
+            return _mapper.Map<SensorVM>(sensor);
+        }
+        public async Task<Sensor> GetSensorByIdAsync(int id)
+        {
+            var sensor = _context.sensors.Include(s => s.project).FirstOrDefault(s => s.Id == id);
+
+            //return sensor;
+            return sensor;
+        }
+
+        //internal Task GetSensorVMsByProjectIdAsync(int id)
+        //{
+        //    return await _context
+        //                .sensors
+        //                .Where(x => x.Id == id)
+        //                //.Select(x => _mapper.Map<SensorVM>(x))
+        //                .SingleOrDefaultAsync();
+        //}
     }
 }

@@ -1,6 +1,7 @@
 ﻿using IoTdotnet.Dtos;
 using IoTdotnet.Services;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IoTdotnet.Controllers
@@ -51,7 +52,9 @@ namespace IoTdotnet.Controllers
             //if (!ModelState.IsValid)
             //    return BadRequest(ModelState);
 
-            var createdProject = await _sensorService.CreateProjectAsync(2, projectdto);
+            //TODO loged in user
+
+            var createdProject = await _sensorService.CreateProjectAsync("933b67d8-9f4a-41f5-9789-cb2b72de8994", projectdto);
             if (createdProject == null)
                 return NotFound();
 
@@ -70,23 +73,73 @@ namespace IoTdotnet.Controllers
                 return NotFound();
             }
 
-            return Ok(r);
+            var vm = await _sensorService.UpdateProjectAsync(r, project);
 
-
-            return await _sensorService.UpdateProjectAsync(id, project)
-                ? NoContent()
-                : NotFound();
+            if (vm is not null)
+            {
+                //good
+                return Ok(vm);
+            }
+            return NoContent();
         }
 
         // DELETE api/<RecipesController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var r = await _sensorService.GetProjectByIdAsync(id);
+
+            if (r == null)
+            {
+                return NotFound();
+            }
+
+            var ans = await _sensorService.DeleteProject(r);
+
+
+
+            if (ans)
+            {
+                return Ok(new { Status = "Ok", Message = "Project has been deleted" });
+            }else
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError,
+                   new { Status = "Error", Message = "Error during deletion." });
+            }
+
             return NotFound();
 
             //return await _recipeBookService.DeleteRecipeAsync(id)
             //    ? NoContent()
             //    : NotFound();
         }
+
+
+        [HttpPost("{id}/AddSensor")]
+        public async Task<IActionResult> Post(int id,[FromBody] NewSensorDto dto)
+        {
+            //if (!ModelState.IsValid)
+            //    return BadRequest(ModelState);
+
+            //TODO loged in user
+
+            var sensor = await _sensorService.CreateSensorAsync(id, dto);
+            if (sensor == null)
+                return NotFound(); // todo more
+
+            return Ok(sensor);
+        }
+        //[HttpGet("{id}/Senors")]
+        //public async Task<IActionResult> GetSensorsByProjectId(int id)
+        //{
+        //    var r = await _sensorService.GetSensorVMsByProjectIdAsync(id);
+
+        //    if (r == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+        //    return Ok(r);
+        //}
     }
 }

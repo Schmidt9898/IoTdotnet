@@ -12,10 +12,12 @@ namespace IoTdotnet.Profiles
         {
             CreateMap<NewProjectDto, Project>();
             CreateMap<UpdateProjectDto, Project>();
+            CreateMap<Project, ProjectVM>();
+
+
             CreateMap<NewSensorDto, Sensor>();
             CreateMap<UpdateSensorDto, Sensor>();
-
-            CreateMap<Project, ProjectVM>();
+            CreateMap<Sensor, SensorVM>();
 
 
             CreateMap<IotUser, IotUserVM>();
